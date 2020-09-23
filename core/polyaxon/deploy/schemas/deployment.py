@@ -42,6 +42,7 @@ from polyaxon.deploy.schemas.service_types import ServiceTypes
 from polyaxon.deploy.schemas.ssl import SSLSchema
 from polyaxon.deploy.schemas.ui import UISchema
 from polyaxon.schemas.base import BaseCamelSchema, BaseConfig
+from polyaxon.schemas.cli.agent_config import validate_agent_config
 from polyaxon.schemas.types import ConnectionTypeSchema
 
 
@@ -164,7 +165,7 @@ def validate_gateway(gateway):
     service_type = gateway.service.get("type")
     if service_type and service_type not in ServiceTypes.VALUES:
         raise ValidationError(
-            "Receive an invalid gateway service type: {}".format(service_type)
+            "Received an invalid gateway service type: {}".format(service_type)
         )
 
 
@@ -243,6 +244,10 @@ class DeploymentSchema(BaseCamelSchema):
     @staticmethod
     def schema_config():
         return DeploymentConfig
+
+    @validates_schema
+    def validate_connection(self, data, **kwargs):
+        validate_agent_config(data.get("artifacts_store"), data.get("connections"))
 
     @validates_schema
     def validate_deployment(self, data, **kwargs):
